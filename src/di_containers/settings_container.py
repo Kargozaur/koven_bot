@@ -8,7 +8,7 @@ from src.core.settings.settings import Settings
 
 class SetingsProvider(Provider):
     @provide(scope=Scope.APP)
-    def get_settings() -> Settings:
+    def get_settings(self) -> Settings:
         return Settings()
 
     @provide(scope=Scope.APP)

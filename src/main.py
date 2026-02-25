@@ -23,7 +23,6 @@ async def main() -> None:
         await bot.start(settings.discord.token.get_secret_value())
     finally:
         await bot.close()
-        await container.close()
 
 
 if __name__ == "__main__":
