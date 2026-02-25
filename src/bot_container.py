@@ -20,3 +20,8 @@ class BotContainer(commands.Bot):
                 print(f"loaded: {extension}")
             except Exception as exc:
                 print(f"Failed to load extension: {exc}")
+
+    async def close(self) -> None:
+        await super().close()
+        if self.container:
+            await self.container.close()

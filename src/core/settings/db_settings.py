@@ -3,8 +3,13 @@ from typing import Annotated
 
 from pydantic import Field, PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from typing_extensions import Doc
 
-Port = Annotated[int, Field(ge=1, le=65535, default=5432)]
+Port = Annotated[
+    int,
+    Field(ge=1, le=65535, default=5432),
+    Doc("Assuming that our default db is postgres"),
+]
 
 
 class AbstractDBConfig(BaseSettings):

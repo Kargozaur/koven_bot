@@ -17,7 +17,7 @@ async def main() -> None:
     intents.message_content = True
 
     bot = BotContainer(command_prefix="!", intents=intents)
-    bot.container = container
+    bot.container: AsyncContainer = container
 
     try:
         await bot.start(settings.discord.token.get_secret_value())
