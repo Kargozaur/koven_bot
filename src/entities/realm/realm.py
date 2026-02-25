@@ -14,7 +14,7 @@ class Realm(IdMixin[int], Base):
         String(18), nullable=False, unique=True
     )  # Defias Brotherhood is the longest name for a realm = 18 characters
     realm_short_name: Mapped[str] = mapped_column(
-        String(5), nullable=False, unique=True
+        String(12), nullable=False, unique=True
     )
 
     @staticmethod

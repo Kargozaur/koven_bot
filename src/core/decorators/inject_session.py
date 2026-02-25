@@ -16,9 +16,9 @@ def inject_session[**P, R](
 
     @wraps(func)
     async def wrapper(ctx: commands.Context, *args: P.args, **kwargs: P.kwargs) -> R:
-        self = cast(BotProto, args[0])
         if not args:
             raise IndexError("Decorator used on a function without the arguments")
+        self = cast(BotProto, args[0])
         if not hasattr(self, "bot"):
             raise IndexError(f"{self.__class__.__name__} must have a 'bot' attribute")
         async with self.bot.container.request() as request_container:

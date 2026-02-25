@@ -2,10 +2,10 @@ from sqlalchemy import ForeignKey, text
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import String
 
-from . import Base, IdMixin
+from . import Base, IntIdMixin
 
 
-class Raider(IdMixin[int], Base):
+class Raider(IntIdMixin, Base):
     __tablename__ = "raider"
 
     raider_name: Mapped[str] = mapped_column(String(20))

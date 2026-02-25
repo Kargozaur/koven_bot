@@ -13,7 +13,7 @@ Port = Annotated[
 
 
 class AbstractDBConfig(BaseSettings):
-    pass
+    ...
 
     @property
     def dsn(self) -> str:
