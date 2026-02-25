@@ -4,10 +4,10 @@ from sqlalchemy import String, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Mapped, mapped_column
 
-from . import Base, IdMixin
+from . import Base, IntIdMixin
 
 
-class Realm(IdMixin[int], Base):
+class Realm(IntIdMixin, Base):
     __tablename__ = "realm"
 
     realm_name: Mapped[str] = mapped_column(
