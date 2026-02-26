@@ -1,0 +1,24 @@
+services: 
+  database:
+    image: postgres:18.1-alpine3.22
+    env_file:
+      - .db.env
+    environment:
+      POSTGRES_USER: ${DB_USER?Set username!}
+      POSTGRES_PASSWORD: ${DB_PASSWORD?Set password!}
+      POSTGRES_DB: ${DB_NAME?Set db name!}
+    restart: unless-stopped
+    ports: 
+      - "5433:5432"
+    shm_size: 256mb
+    volumes:
+     - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
+      interval: 30s
+      timeout: 15s
+
+
+
+volumes:
+  db_data:

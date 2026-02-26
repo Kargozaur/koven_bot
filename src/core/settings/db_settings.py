@@ -36,7 +36,7 @@ class PostgresConfig(AbstractDBConfig):
     def dsn(self) -> str:
         return str(
             PostgresDsn.build(
-                scheme=f"postgres+{self.driver}",
+                scheme=f"postgresql+{self.driver}",
                 username=self.user,
                 password=self.password,
                 host=self.host,

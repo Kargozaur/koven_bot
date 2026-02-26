@@ -15,4 +15,6 @@ class IntIdMixin(IdMixin[int]):
 
 
 class UUIDIdMixin(IdMixin[UUID]):
-    id: Mapped[UUID] = mapped_column(sa.UUID(as_uuid=True), default=uuid7)
+    id: Mapped[UUID] = mapped_column(
+        sa.UUID(as_uuid=True), default=uuid7, primary_key=True
+    )

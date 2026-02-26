@@ -12,7 +12,16 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from src.core.settings.settings import Settings
-from src.entities.base import Base
+from src.entities import (
+    Base,
+    Character,
+    Locales,
+    Owner,
+    OwnerToCharacter,
+    Realm,
+    RealmsInfo,
+    Region,
+)
 
 settings = Settings()
 # this is the Alembic Config object, which provides
