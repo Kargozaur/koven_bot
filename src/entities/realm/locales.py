@@ -12,6 +12,6 @@ class Locales(IntIdMixin, Base):
     locales: Mapped[LocalesEnum] = mapped_column(sa.Enum(LocalesEnum), nullable=False)
 
     name = relationship(
-        "CommonNames",
+        "RealmsInfo",
         back_populates="locale",
     )
