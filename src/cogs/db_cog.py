@@ -8,10 +8,10 @@ class DBCog(commands.Cog):
     def __init__(self, bot: BotContainer) -> None:
         self.bot = bot
 
-    @commands.command()
+    @commands.command(name="which_db")
     async def check_db(self, ctx: commands.Context) -> None:
         config = await self.bot.container.get(AbstractDBConfig)
-        await ctx.send(f"DB ready: {config.dsn}")
+        await ctx.send(f"DB ready: {config.dsn.split('+')[0]}")
 
 
 async def setup(bot: BotContainer) -> None:
