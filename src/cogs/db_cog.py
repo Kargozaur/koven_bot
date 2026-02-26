@@ -12,3 +12,7 @@ class DBCog(commands.Cog):
     async def check_db(self, ctx: commands.Context) -> None:
         config = await self.bot.container.get(AbstractDBConfig)
         await ctx.send(f"DB ready: {config.dsn}")
+
+
+async def setup(bot: BotContainer) -> None:
+    await bot.add_cog(DBCog(bot))

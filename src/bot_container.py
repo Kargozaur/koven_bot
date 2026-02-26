@@ -1,5 +1,6 @@
 import pathlib
 
+import discord
 from discord.ext import commands
 from dishka.async_container import AsyncContainer
 
@@ -20,6 +21,12 @@ class BotContainer(commands.Bot):
                 print(f"loaded: {extension}")
             except Exception as exc:
                 print(f"Failed to load extension: {exc}")
+
+    async def on_message(self, message: discord.Message) -> None:
+        print(f"received message: '{message.content}' from {message.author}")
+        if message.author.bot:
+            return
+        await self.process_commands(message)
 
     async def close(self) -> None:
         await super().close()
