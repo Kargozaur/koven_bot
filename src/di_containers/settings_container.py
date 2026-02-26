@@ -6,7 +6,7 @@ from src.core.settings.rio_settings import RioSettings
 from src.core.settings.settings import Settings
 
 
-class SetingsProvider(Provider):
+class SettingsProvider(Provider):
     @provide(scope=Scope.APP)
     def get_settings(self) -> Settings:
         return Settings()

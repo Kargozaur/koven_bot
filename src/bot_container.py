@@ -23,9 +23,16 @@ class BotContainer(commands.Bot):
                 print(f"Failed to load extension: {exc}")
 
     async def on_message(self, message: discord.Message) -> None:
-        print(f"received message: '{message.content}' from {message.author}")
+        print(f"DEBUG: Processing message: '{message.content}'")
         if message.author.bot:
             return
+
+        # Пытаемся понять, считает ли discord.py это командой
+        ctx = await self.get_context(message)
+        if ctx.valid:
+            print(f"DEBUG: Command '{ctx.command}' found, invoking...")
+        else:
+            print("DEBUG: No valid command found for this message.")
         await self.process_commands(message)
 
     async def close(self) -> None:

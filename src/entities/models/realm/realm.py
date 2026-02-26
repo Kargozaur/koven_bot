@@ -20,7 +20,7 @@ class Realm(IntIdMixin, Base):
     character = relationship("Character", back_populates="realm")
 
     @staticmethod
-    def _generate_candidate(name: str, attempt: int) -> str:
+    def _generate_candidate(name: str, attempt: int = 1) -> str:
         """method accepts either cyrillic or latinic realm names"""
         clean: str = re.sub(r"[^a-zA-Zа-яА-ЯёЁ\s]", "", name).strip()
         words: list[str] = clean.split()
