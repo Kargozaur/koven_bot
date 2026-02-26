@@ -15,7 +15,11 @@ class DBProvider(Provider):
     @provide(scope=Scope.APP)
     def get_engine(self, config: AbstractDBConfig) -> AsyncEngine:
         return create_async_engine(
-            url=config.dsn, pool_size=10, max_overflow=20, pool_pre_ping=True
+            url=config.dsn,
+            pool_size=10,
+            max_overflow=20,
+            pool_pre_ping=True,
+            connect_args={"check_same_thread": False} if "sqlite" in config.dsn else {},
         )
 
     @provide(scope=Scope.APP)

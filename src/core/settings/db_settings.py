@@ -13,7 +13,9 @@ Port = Annotated[
 
 
 class AbstractDBConfig(BaseSettings):
-    ...
+    model_config = SettingsConfigDict(
+        env_file=".db.env", extra="ignore", env_prefix="DB_"
+    )
 
     @property
     def dsn(self) -> str:
@@ -27,10 +29,6 @@ class PostgresConfig(AbstractDBConfig):
     host: str
     name: str
     port: Port
-
-    model_config = SettingsConfigDict(
-        env_file=".db.env", extra="ignore", env_prefix="DB_"
-    )
 
     @property
     def dsn(self) -> str:
@@ -46,12 +44,24 @@ class PostgresConfig(AbstractDBConfig):
         )
 
 
+class SQLiteConfig(AbstractDBConfig):
+    path: str = Field(default="database.db")
+    driver: str = Field(default="aiosqlite")
+
+    @property
+    def dsn(self) -> str:
+        return f"sqlite+{self.driver}:///{self.path}"
+
+
 def create_db_settings() -> AbstractDBConfig:
     from dotenv import load_dotenv
 
-    load_dotenv(".env.db")
-    db_type = os.getenv("DB_TYPE", "postgres").lower()
-    configs: dict[str, type[AbstractDBConfig]] = {"postgres": PostgresConfig}
+    load_dotenv(".db.env")
+    db_type = os.getenv("DB_TYPE", "sqlite").lower()
+    configs: dict[str, type[AbstractDBConfig]] = {
+        "postgres": PostgresConfig,
+        "sqlite": SQLiteConfig,
+    }
     config_class = configs.get(db_type)
     if not config_class:
         raise ValueError(f"Unsupported DB type: {db_type}")
