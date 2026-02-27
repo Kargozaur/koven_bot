@@ -1,8 +1,9 @@
+import discord
 from discord.ext import commands
 
 from src.bot_container import BotContainer
 from src.core.decorators.inject import inject
-from src.entities.schemas.character import CharacterDTO
+from src.entities.schemas.character import CharacterDTO, CharacterResponse
 from src.repositories.character_repo import CharacterRepository
 from src.services.rio_service import RaiderIOService
 
@@ -50,6 +51,28 @@ class RioCog(commands.Cog):
             import traceback
 
             traceback.print_exc()
+
+    @commands.command(name="get_me")
+    @inject
+    async def build_info(
+        self,
+        ctx: commands.Context,
+        repo: CharacterRepository = commands.parameter(default=None),
+    ) -> None:
+        characters: list[CharacterResponse] = await repo.get_characters(ctx.author.id)
+        embed = discord.Embed(
+            title=f"Characters of {ctx.author.name}", color=discord.Color.blue()
+        )
+        if not characters:
+            embed.description = "You have no characters"
+        else:
+            for char in characters:
+                embed.add_field(
+                    name=char.name,
+                    value=f"{char.realm_name} - ({char.region.upper()})",
+                    inline=False,
+                )
+        await ctx.send(embed=embed)
 
 
 async def setup(bot: BotContainer) -> None:

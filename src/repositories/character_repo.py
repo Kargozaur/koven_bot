@@ -1,5 +1,6 @@
 import asyncio
 
+import sqlalchemy as sa
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,7 +11,7 @@ from src.entities.models.characters.owner_to_char import OwnerToCharacter
 from src.entities.models.realm.realm import Realm
 from src.entities.models.realm.realm_all import RealmsInfo
 from src.entities.models.realm.region import Region
-from src.entities.schemas.character import CharacterDTO
+from src.entities.schemas.character import CharacterDTO, CharacterResponse
 
 
 class CharacterRepository:
@@ -132,3 +133,28 @@ class CharacterRepository:
             import traceback
 
             traceback.print_exc()
+
+    async def get_characters(self, discord_id: int) -> list[CharacterResponse]:
+        try:
+            query = sa.text("""SELECT
+                c.character_name, r.realm_name, r.realm_short_name, re.region
+                FROM characters c JOIN owner_to_character otc on c.id = otc.character_id
+                JOIN owner o on otc.owner_id = o.id
+                JOIN realm r on c.realm_id = r.id
+                JOIN realms_info ri on r.id = ri.realm_slug_id
+                JOIN region re on ri.realm_region_id = re.id
+                WHERE o.discord_id = :discord_id""")
+            result = await self.session.execute(
+                query.bindparams(
+                    sa.bindparam("discord_id", value=discord_id, type_=sa.BigInteger)
+                ),
+            )
+            rows = result.all()
+            return [
+                CharacterResponse.model_validate(row._mapping)
+                for row in rows
+                if row._mapping is not None
+            ]
+        except Exception as e:
+            print(f"Error: {e}")
+            return []

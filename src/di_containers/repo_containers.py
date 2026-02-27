@@ -6,9 +6,11 @@ from src.repositories.character_repo import CharacterRepository
 
 
 class RepositoryProvider(Provider):
-    scope = Scope.REQUEST
     discord_context = from_context(Context, scope=Scope.REQUEST)
 
-    @provide
+    @provide(scope=Scope.REQUEST)
     def character_repo(self, session: AsyncSession) -> CharacterRepository:
-        return CharacterRepository(session)
+        print("injecting character repo")
+        rep = CharacterRepository(session)
+        print("injected character repo")
+        return rep

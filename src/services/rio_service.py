@@ -16,6 +16,7 @@ class RaiderIOService:
     def __init__(self, client: AsyncClient, rio_settings: RioSettings) -> None:
         self.client = client
         self.rio_settings = rio_settings
+        self.api_url = "https://raider.io/api/v1/characters/profile"
 
     def _extract_params_from_url(self, url: str) -> CharParamns | None:
         decoded_url = urllib.parse.unquote(url).strip()
@@ -32,7 +33,7 @@ class RaiderIOService:
             return None
 
     async def fetch_character(self, params: CharParamns) -> dict | None:
-        api_url = "https://raider.io/api/v1/characters/profile"
+
         query_params = {
             "region": params.region,
             "realm": params.realm,
@@ -43,7 +44,7 @@ class RaiderIOService:
         headers = {"Authorization": f"Bearer {token}"} if token else {}
         try:
             response = await self.client.get(
-                url=api_url, params=query_params, headers=headers
+                url=self.api_url, params=query_params, headers=headers
             )
             if response.status_code == 200:
                 return response.json()

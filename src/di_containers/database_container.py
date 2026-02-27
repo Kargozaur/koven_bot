@@ -33,4 +33,5 @@ class DBProvider(Provider):
         self, session_maker: async_sessionmaker[AsyncSession]
     ) -> AsyncIterable[AsyncSession]:
         async with session_maker() as session:
+            print("injecting session")
             yield session
