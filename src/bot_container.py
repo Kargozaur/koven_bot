@@ -27,7 +27,6 @@ class BotContainer(commands.Bot):
         if message.author.bot:
             return
 
-        # Пытаемся понять, считает ли discord.py это командой
         ctx = await self.get_context(message)
         if ctx.valid:
             print(f"DEBUG: Command '{ctx.command}' found, invoking...")
