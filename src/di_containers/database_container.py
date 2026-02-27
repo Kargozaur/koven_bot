@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 from src.core.settings.db_settings import AbstractDBConfig
 
 
-class DBProvider(Provider):
+class DBContainer(Provider):
     @provide(scope=Scope.APP)
     def get_engine(self, config: AbstractDBConfig) -> AsyncEngine:
         return create_async_engine(

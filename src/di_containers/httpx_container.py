@@ -4,7 +4,7 @@ from dishka import Provider, Scope, provide
 from httpx import AsyncClient, Timeout
 
 
-class AsyncClientProvider(Provider):
+class AsyncClientContainer(Provider):
     @provide(scope=Scope.APP)
     async def get_async_client(self) -> AsyncIterable[AsyncClient]:
         async with AsyncClient(

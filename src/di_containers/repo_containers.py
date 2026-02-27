@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.repositories.character_repo import CharacterRepository
 
 
-class RepositoryProvider(Provider):
+class RepositoryContainer(Provider):
     discord_context = from_context(Context, scope=Scope.REQUEST)
 
     @provide(scope=Scope.REQUEST)

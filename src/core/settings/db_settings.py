@@ -8,7 +8,7 @@ from typing_extensions import Doc
 Port = Annotated[
     int,
     Field(ge=1, le=65535, default=5432),
-    Doc("Assuming that our default db is postgres"),
+    Doc("Assuming that db is postgres with port 5432"),
 ]
 
 
