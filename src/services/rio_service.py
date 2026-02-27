@@ -22,15 +22,13 @@ class RaiderIOService:
         print(f"DECODED URL: {decoded_url}")
         match = self.URL_PATTERN.search(decoded_url)
         if not match:
-            print("DEBUG: regex failed")
             return None
 
         try:
             params = CharParamns(**match.groupdict())
             print(f"DEBUG: created params {params}")
             return params
-        except Exception as e:
-            print(f"DEBUG: Pydantic validation failed {e}")
+        except Exception:
             return None
 
     async def fetch_character(self, params: CharParamns) -> dict | None:
@@ -41,17 +39,14 @@ class RaiderIOService:
             "name": params.name,
             "fields": "mythic_plus_scores_by_season:current",
         }
-        print(f"DEBUG: Requesting API {api_url} params={query_params}")
         token = self.rio_settings.key.get_secret_value()
         headers = {"Authorization": f"Bearer {token}"} if token else {}
         try:
             response = await self.client.get(
                 url=api_url, params=query_params, headers=headers
             )
-            print(f"DEBUG: API status: {response.status_code}")
             if response.status_code == 200:
                 return response.json()
-        except Exception as e:
-            print(f"DEBUG: Failed to fetch data from API: {e}")
-
+        except Exception:
+            return None
         return None

@@ -20,22 +20,17 @@ class RioCog(commands.Cog):
         rio: RaiderIOService = commands.parameter(default=None),
         repo: CharacterRepository = commands.parameter(default=None),
     ) -> None:
-        print(f"Received url: {url}")
         params = rio._extract_params_from_url(url)
         if not params:
-            print("Failed to parse url")
             await ctx.send("Bad url")
             return
 
-        print(f"Requesting API: {params.name}")
         data = await rio.fetch_character(params)
 
         if not data:
-            print("Api is empty")
             await ctx.send("Character not found")
             return
 
-        print(f"API data: {data['name']} @ {data['realm']}")
         try:
             dto = CharacterDTO(
                 name=data["name"],
@@ -43,11 +38,12 @@ class RioCog(commands.Cog):
                 realm=data["realm"],
             )
 
-            print("Saving to db")
             await repo.save_character(ctx.author.id, dto)
 
-            print("Success")
-            await ctx.send(f"Character {dto.name} - ({dto.realm})")
+            await ctx.send(
+                f":white_check_mark: Added character: {data['name']}.\n"
+                f"Owner: {ctx.author.mention}"
+            )
 
         except Exception as e:
             print(f"Error: {e}")
