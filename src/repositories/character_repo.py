@@ -140,7 +140,7 @@ class CharacterRepository:
                 c.character_name, r.realm_name, r.realm_short_name, re.region
                 FROM characters c JOIN owner_to_character otc on c.id = otc.character_id
                 JOIN owner o on otc.owner_id = o.id
-                     and o.discord_id = :discord_id
+                    and o.discord_id = :discord_id
                 JOIN realm r on c.realm_id = r.id
                 JOIN realms_info ri on r.id = ri.realm_slug_id
                 JOIN region re on ri.realm_region_id = re.id
