@@ -5,20 +5,20 @@ from dishka.async_container import AsyncContainer
 
 from src.bot_container import BotContainer
 from src.core.settings.settings import Settings
-from src.di_containers.database_container import DBContainer
-from src.di_containers.httpx_container import AsyncClientContainer
-from src.di_containers.repo_containers import RepositoryContainer
-from src.di_containers.rio_container import RioContainer
-from src.di_containers.settings_container import SettingsContainer
+from src.di_providers.database_provider import DBProvider
+from src.di_providers.httpx_provider import HttpxProvider
+from src.di_providers.repo_provider import RepositoryProvider
+from src.di_providers.rio_provider import RioProvider
+from src.di_providers.settings_provider import SettingsProvider
 
 
 async def main() -> None:
     container: AsyncContainer = make_async_container(
-        SettingsContainer(),
-        DBContainer(),
-        AsyncClientContainer(),
-        RepositoryContainer(),
-        RioContainer(),
+        SettingsProvider(),
+        DBProvider(),
+        HttpxProvider(),
+        RepositoryProvider(),
+        RioProvider(),
     )
     settings: Settings = await container.get(Settings)
 

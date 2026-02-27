@@ -5,7 +5,7 @@ from src.core.settings.rio_settings import RioSettings
 from src.services.rio_service import RaiderIOService
 
 
-class RioContainer(Provider):
+class RioProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_rio_service(
         self, http_client: AsyncClient, rio_settings: RioSettings
