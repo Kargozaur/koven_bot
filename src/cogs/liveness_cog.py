@@ -4,16 +4,29 @@ from discord.ext import commands
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.decorators.inject_session import inject_session
+from src.core.decorators.inject_session import inject
 
 
 class LivenessCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
+    async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        import traceback
+
+        print(f"Error: {self.qualified_name}:")
+        traceback.print_exc()
+        await ctx.send(f"Error: {error}")
+
     @commands.command(name="ping")
-    @inject_session
-    async def ping(self, ctx: commands.Context, *, session: AsyncSession) -> None:
+    @inject
+    async def ping(
+        self,
+        ctx: commands.Context,
+        session: AsyncSession | None = None,
+    ) -> None:
+        if session is None:
+            return
         db_start = time.perf_counter()
         await session.execute(text("SELECT 1"))
         db_end = time.perf_counter()

@@ -55,7 +55,7 @@ class Realm(IntIdMixin, Base):
                 candidate: str = cls._generate_candidate(full_name, attempt)
 
                 if candidate not in used_shorts:
-                    new_realm = cls(name=full_name, short_name=candidate)
+                    new_realm = cls(realm_name=full_name, realm_short_name=candidate)
                     new_objects.append(new_realm)
                     used_shorts.add(candidate)
                     break
@@ -64,7 +64,9 @@ class Realm(IntIdMixin, Base):
                 if attempt > 3:
                     candidate = f"{candidate[:2]}{len(used_shorts)}"
                     used_shorts.add(candidate)
-                    new_objects.append(cls(name=full_name, short_name=candidate))
+                    new_objects.append(
+                        cls(realm_name=full_name, realm_short_name=candidate)
+                    )
                     break
 
         if new_objects:

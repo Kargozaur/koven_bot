@@ -7,9 +7,11 @@ from . import Base, IntIdMixin
 
 
 class Locales(IntIdMixin, Base):
+    """Table to work with the blizzard API"""
+
     __tablename__ = "locale"
 
-    locales: Mapped[LocalesEnum] = mapped_column(sa.Enum(LocalesEnum), nullable=False)
+    locales: Mapped[LocalesEnum] = mapped_column(sa.Enum(LocalesEnum), nullable=True)
 
     name = relationship(
         "RealmsInfo",
