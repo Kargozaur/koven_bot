@@ -1,7 +1,7 @@
 from discord.ext import commands
 
 from src.bot_container import BotContainer
-from src.core.decorators.inject_session import inject
+from src.core.decorators.inject import inject
 from src.entities.schemas.character import CharacterDTO
 from src.repositories.character_repo import CharacterRepository
 from src.services.rio_service import RaiderIOService

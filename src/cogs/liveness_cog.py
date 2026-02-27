@@ -4,7 +4,7 @@ from discord.ext import commands
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.decorators.inject_session import inject
+from src.core.decorators.inject import inject
 
 
 class LivenessCog(commands.Cog):
