@@ -1,3 +1,5 @@
+import asyncio
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -75,7 +77,9 @@ class CharacterRepository:
             realm: Realm | None = await self.get_entity(Realm, realm_name=search_name)
 
             if not realm:
-                short_name: str = Realm._generate_candidate(search_name)
+                short_name: str = await asyncio.to_thread(
+                    Realm._generate_candidate, search_name
+                )
                 realm: Realm = await self.create_entity(
                     Realm,
                     realm_name=search_name,
