@@ -3,6 +3,7 @@ import urllib.parse
 
 from httpx import AsyncClient
 
+from src.core.settings.rio_settings import RioSettings
 from src.params.char_params import CharParamns
 
 
@@ -12,8 +13,9 @@ class RaiderIOService:
         re.IGNORECASE,
     )
 
-    def __init__(self, client: AsyncClient) -> None:
+    def __init__(self, client: AsyncClient, rio_settings: RioSettings) -> None:
         self.client = client
+        self.rio_settings = rio_settings
 
     def _extract_params_from_url(self, url: str) -> CharParamns | None:
         decoded_url = urllib.parse.unquote(url).strip()
@@ -40,13 +42,16 @@ class RaiderIOService:
             "fields": "mythic_plus_scores_by_season:current",
         }
         print(f"DEBUG: Requesting API {api_url} params={query_params}")
-
+        token = self.rio_settings.key.get_secret_value()
+        headers = {"Authorization": f"Bearer {token}"} if token else {}
         try:
-            response = await self.client.get(url=api_url, params=query_params)
+            response = await self.client.get(
+                url=api_url, params=query_params, headers=headers
+            )
             print(f"DEBUG: API status: {response.status_code}")
             if response.status_code == 200:
                 return response.json()
         except Exception as e:
-            print(f"DEBUG: Ошибка HTTP-клиента: {e}")
+            print(f"DEBUG: Failed to fetch data from API: {e}")
 
         return None
