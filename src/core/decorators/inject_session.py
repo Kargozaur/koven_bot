@@ -11,6 +11,33 @@ from dishka import Scope
 def inject[**P, R](
     func: Callable[..., Coroutine[Any, Any, R]] | Callable[..., Awaitable[R]],
 ) -> Callable[..., Coroutine[Any, Any, R]]:
+    """
+    A decorator that injects a dependency from the bot's container
+    into the decorated function.
+
+    The dependency is injected into the decorated function as a keyword argument.
+    The keyword argument name is inferred from the type hint of the corresponding
+    parameter in the decorated function.
+
+    If the parameter is not annotated with a type, or if the type is `None`,
+    the parameter is not injected.
+
+    If the parameter is annotated with a `Union`, the first non-`None` type in the union
+     is used as the type to inject.
+
+    If the parameter is already present in the decorated function's arguments,
+    the value from the arguments is used instead of the injected value.
+
+    If the injection fails
+    (for example, if the type cannot be resolved from the container),
+    an exception is raised.
+
+    :param P: The parameters of the decorated function.
+    :param R: The return type of the decorated function.
+    :return: A coroutine that returns the result of the decorated function
+    with the injected dependency.
+    """
+
     @wraps(func)
     async def wrapper(
         self: object, ctx: commands.Context, *args: P.args, **kwargs: P.kwargs
