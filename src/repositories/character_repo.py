@@ -1,7 +1,7 @@
 import asyncio
+from collections.abc import Sequence
 
 import sqlalchemy as sa
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.exceptions.exceptions import EntityCreationError
@@ -14,47 +14,13 @@ from src.entities.models.realm.region import Region
 from src.entities.schemas.character import (
     CharacterDTO,
     CharacterInfo,
-    CharacterResponse,
 )
+from src.repositories.base_repository import BaseRepository
 
 
-class CharacterRepository:
+class CharacterRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
-        self.session = session
-
-    async def get_entity[ModelT](
-        self, model: type[ModelT], **filters: object
-    ) -> ModelT | None:
-        """
-        Retrieves an entity from the database based on the given filters.
-        :param model: The type of the entity to retrieve
-        :param filters: The filters to apply to the query
-        :return: The retrieved entity, or None if no entity was found
-        """
-        query = select(model).filter_by(**filters)
-        result = await self.session.execute(query)
-        return result.scalar_one_or_none()
-
-    async def create_entity[ModelT](
-        self, model: type[ModelT], **attributes: object
-    ) -> ModelT:
-        """
-        Creates an entity in the database.
-        :param model: The type of the entity to create
-        :param attributes: The attributes of the entity to create
-        :return: The created entity
-        :raises EntityCreationError: If an error occurs while creating an entity
-        """
-        entity = model(**attributes)
-        self.session.add(entity)
-        try:
-            await self.session.flush()
-            return entity
-        except Exception as exc:
-            # If an error occurs while creating an entity, raise an EntityCreationError
-            raise EntityCreationError(
-                f"Failed to create {model.__name__}: {exc}"
-            ) from exc
+        super().__init__(session)
 
     async def save_character(self, discord_id: int, dto: CharacterDTO) -> None:
         """
@@ -74,58 +40,60 @@ class CharacterRepository:
             if not target_region_id:
                 raise ValueError(f"Region is not supported: {dto.region}")
 
-            region: Region | None = await self.get_entity(Region, id=target_region_id)
+            region: Region | None = await super().get_entity(
+                Region, id=target_region_id
+            )
             if not region:
                 raise ValueError("Region not found in DB")
 
             search_name: str = dto.realm.replace("-", " ").title()
-            realm: Realm | None = await self.get_entity(Realm, realm_name=search_name)
+            realm: Realm | None = await super().get_entity(
+                Realm, realm_name=search_name
+            )
 
             if not realm:
                 short_name: str = await asyncio.to_thread(
                     Realm._generate_candidate, search_name
                 )
-                realm: Realm = await self.create_entity(
+                realm: Realm = await super().create_entity(
                     Realm,
                     realm_name=search_name,
                     realm_short_name=short_name,
                 )
                 print(f"Created realm: {realm.realm_name}")
 
-            realm_info: RealmsInfo | None = await self.get_entity(
+            realm_info: RealmsInfo | None = await super().get_entity(
                 RealmsInfo, realm_slug_id=realm.id, realm_region_id=region.id
             )
             if not realm_info:
-                realm_info: RealmsInfo = await self.create_entity(
+                realm_info: RealmsInfo = await super().create_entity(
                     RealmsInfo,
                     realm_slug_id=realm.id,
                     realm_region_id=region.id,
                     locale_id=2,  # placeholder
                 )
 
-            owner: Owner | None = await self.get_entity(Owner, discord_id=discord_id)
+            owner: Owner | None = await super().get_entity(Owner, discord_id=discord_id)
             if not owner:
-                owner: Owner = await self.create_entity(Owner, discord_id=discord_id)
+                owner: Owner = await super().create_entity(Owner, discord_id=discord_id)
             character_data: CharacterInfo = CharacterInfo(**dto.model_dump())
-            character: Character | None = await self.get_entity(
+            character: Character | None = await super().get_entity(
                 Character, character_name=dto.character_name, realm_id=realm.id
             )
             if not character:
-                character: Character = await self.create_entity(
+                character: Character = await super().create_entity(
                     Character,
                     **character_data.model_dump(exclude_unset=True),
                     realm_id=realm.id,
                 )
 
-            link: OwnerToCharacter | None = await self.get_entity(
+            link: OwnerToCharacter | None = await super().get_entity(
                 OwnerToCharacter, owner_id=owner.id, character_id=character.id
             )
             if not link:
-                await self.create_entity(
+                await super().create_entity(
                     OwnerToCharacter, owner_id=owner.id, character_id=character.id
                 )
-
-            await self.session.commit()
             print(f"Successfully saved character: {dto.character_name}")
 
         except (ValueError, EntityCreationError) as e:
@@ -138,7 +106,7 @@ class CharacterRepository:
 
             traceback.print_exc()
 
-    async def get_characters(self, discord_id: int) -> list[CharacterResponse]:
+    async def get_characters(self, discord_id: int) -> Sequence:
         try:
             query = sa.text("""SELECT
                 c.character_name, c.url, r.realm_name,re.region
@@ -154,12 +122,25 @@ class CharacterRepository:
                     sa.bindparam("discord_id", value=discord_id, type_=sa.BigInteger)
                 ),
             )
-            rows = result.all()
-            return [
-                CharacterResponse.model_validate(row._mapping)
-                for row in rows
-                if row._mapping is not None
-            ]
+            rows = result.mappings().all()
+            return rows
         except Exception as e:
             print(f"Error: {e}")
             return []
+
+    async def update_character(
+        self,
+        character_name: str,
+        **updated_data: object,
+    ) -> bool | None:
+        character: Character | None = await super().get_entity(
+            Character, character_name=character_name
+        )
+        if not character:
+            return None
+        result: Character | None = await super().update_entity(
+            Character, character.id, **updated_data
+        )
+        if not result:
+            return None
+        return True

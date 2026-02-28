@@ -7,7 +7,7 @@ from src.bot_container import BotContainer
 from src.core.decorators.inject import inject
 from src.entities.schemas.character import CharacterDTO, CharacterResponse
 from src.params.char_params import CharParamns
-from src.repositories.character_repo import CharacterRepository
+from src.services.character_service import CharacterService
 from src.services.rio_service import RaiderIOService
 
 
@@ -22,7 +22,7 @@ class RioCog(commands.Cog):
         ctx: commands.Context,
         url: str,
         rio: RaiderIOService = commands.parameter(default=None),
-        repo: CharacterRepository = commands.parameter(default=None),
+        repo: CharacterService = commands.parameter(default=None),
     ) -> None:
         params: CharParamns | None = await asyncio.to_thread(
             rio._extract_params_from_url, url
@@ -46,7 +46,7 @@ class RioCog(commands.Cog):
                 achievement_points=data["achievement_points"],
             )
 
-            await repo.save_character(ctx.author.id, dto)
+            await repo.create_character(ctx.author.id, dto)
 
             await ctx.send(
                 f":white_check_mark: Added character: {data['name']}.\n"
@@ -64,7 +64,7 @@ class RioCog(commands.Cog):
     async def build_info(
         self,
         ctx: commands.Context,
-        repo: CharacterRepository = commands.parameter(default=None),
+        repo: CharacterService = commands.parameter(default=None),
     ) -> None:
         characters: list[CharacterResponse] = await repo.get_characters(ctx.author.id)
         embed = discord.Embed(

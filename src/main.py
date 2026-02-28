@@ -8,8 +8,9 @@ from src.core.settings.settings import Settings
 from src.di_providers.database_provider import DBProvider
 from src.di_providers.httpx_provider import HttpxProvider
 from src.di_providers.repo_provider import RepositoryProvider
-from src.di_providers.rio_provider import RioProvider
+from src.di_providers.service_provider import ServiceProvider
 from src.di_providers.settings_provider import SettingsProvider
+from src.di_providers.uow_provider import UOWProvider
 
 
 async def main() -> None:
@@ -18,7 +19,8 @@ async def main() -> None:
         DBProvider(),
         HttpxProvider(),
         RepositoryProvider(),
-        RioProvider(),
+        UOWProvider(),
+        ServiceProvider(),
     )
     settings: Settings = await container.get(Settings)
 

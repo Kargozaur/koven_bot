@@ -16,7 +16,11 @@ class RaiderIOService:
     def __init__(self, client: AsyncClient, rio_settings: RioSettings) -> None:
         self.client = client
         self.rio_settings = rio_settings
-        self.api_url = "https://raider.io/api/v1/characters/profile"
+        self.__api_url = "https://raider.io/api/v1/characters/profile"
+
+    @property
+    def url(self) -> str:
+        return self.__api_url
 
     def _extract_params_from_url(self, url: str) -> CharParamns | None:
         decoded_url = urllib.parse.unquote(url).strip()
@@ -44,7 +48,7 @@ class RaiderIOService:
         headers = {"Authorization": f"Bearer {token}"} if token else {}
         try:
             response = await self.client.get(
-                url=self.api_url, params=query_params, headers=headers
+                url=self.url, params=query_params, headers=headers
             )
             if response.status_code == 200:
                 return response.json()
