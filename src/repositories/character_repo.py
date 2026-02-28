@@ -11,7 +11,11 @@ from src.entities.models.characters.owner_to_char import OwnerToCharacter
 from src.entities.models.realm.realm import Realm
 from src.entities.models.realm.realm_all import RealmsInfo
 from src.entities.models.realm.region import Region
-from src.entities.schemas.character import CharacterDTO, CharacterResponse
+from src.entities.schemas.character import (
+    CharacterDTO,
+    CharacterInfo,
+    CharacterResponse,
+)
 
 
 class CharacterRepository:
@@ -102,14 +106,14 @@ class CharacterRepository:
             owner: Owner | None = await self.get_entity(Owner, discord_id=discord_id)
             if not owner:
                 owner: Owner = await self.create_entity(Owner, discord_id=discord_id)
-
+            character_data: CharacterInfo = CharacterInfo(**dto.model_dump())
             character: Character | None = await self.get_entity(
-                Character, character_name=dto.name, realm_id=realm.id
+                Character, character_name=dto.character_name, realm_id=realm.id
             )
             if not character:
                 character: Character = await self.create_entity(
                     Character,
-                    character_name=dto.name,
+                    **character_data.model_dump(exclude_unset=True),
                     realm_id=realm.id,
                 )
 
@@ -122,7 +126,7 @@ class CharacterRepository:
                 )
 
             await self.session.commit()
-            print(f"Successfully saved character: {dto.name}")
+            print(f"Successfully saved character: {dto.character_name}")
 
         except (ValueError, EntityCreationError) as e:
             await self.session.rollback()

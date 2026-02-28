@@ -1,8 +1,13 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class CharacterDTO(BaseModel):
-    name: str
+class CharacterInfo(BaseModel):
+    character_name: str
+    url: str | None
+    achievement_points: int | None
+
+
+class CharacterDTO(CharacterInfo):
     region: str
     realm: str
 

@@ -39,9 +39,11 @@ class RioCog(commands.Cog):
 
         try:
             dto = CharacterDTO(
-                name=data["name"],
+                character_name=data["name"],
                 region=data["region"],
                 realm=data["realm"],
+                url=data["profile_url"],
+                achievement_points=data["achievement_points"],
             )
 
             await repo.save_character(ctx.author.id, dto)

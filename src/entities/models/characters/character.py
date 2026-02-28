@@ -12,6 +12,9 @@ class Character(UUIDIdMixin, Base):
     realm_id: Mapped[int] = mapped_column(
         sa.ForeignKey("realm.id", ondelete="SET NULL"), nullable=False
     )
+    url: Mapped[str] = mapped_column(sa.String(2048), nullable=True)
+    achievement_points: Mapped[int] = mapped_column(nullable=True)
+
     realm = relationship("Realm", back_populates="character")
     character = relationship(
         "OwnerToCharacter", back_populates="char", cascade="all, delete-orphan"
