@@ -76,11 +76,11 @@ class CharacterRepository(BaseRepository):
             owner: Owner | None = await super().get_entity(Owner, discord_id=discord_id)
             if not owner:
                 owner: Owner = await super().create_entity(Owner, discord_id=discord_id)
-            character_data: CharacterInfo = CharacterInfo(**dto.model_dump())
             character: Character | None = await super().get_entity(
                 Character, character_name=dto.character_name, realm_id=realm.id
             )
             if not character:
+                character_data: CharacterInfo = CharacterInfo(**dto.model_dump())
                 character: Character = await super().create_entity(
                     Character,
                     **character_data.model_dump(exclude_unset=True),
