@@ -59,7 +59,8 @@ class BaseRepository:
             return None
 
         for key, value in attributes.items():
-            setattr(entity, key, value)
+            if hasattr(entity, key):
+                setattr(entity, key, value)
 
         try:
             await self.session.flush()
