@@ -1,9 +1,12 @@
+import asyncio
+
 import discord
 from discord.ext import commands
 
 from src.bot_container import BotContainer
 from src.core.decorators.inject import inject
 from src.entities.schemas.character import CharacterDTO, CharacterResponse
+from src.params.char_params import CharParamns
 from src.repositories.character_repo import CharacterRepository
 from src.services.rio_service import RaiderIOService
 
@@ -21,7 +24,9 @@ class RioCog(commands.Cog):
         rio: RaiderIOService = commands.parameter(default=None),
         repo: CharacterRepository = commands.parameter(default=None),
     ) -> None:
-        params = rio._extract_params_from_url(url)
+        params: CharParamns | None = await asyncio.to_thread(
+            rio._extract_params_from_url, url
+        )
         if not params:
             await ctx.send("Bad url")
             return
