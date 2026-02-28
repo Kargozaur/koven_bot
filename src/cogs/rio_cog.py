@@ -74,9 +74,15 @@ class RioCog(commands.Cog):
             embed.description = "You have no characters"
         else:
             for char in characters:
+                link: str = (
+                    f"[Profile]({char.url}) - {char.realm_name} - "
+                    f"({char.region.upper()})"
+                    if char.url
+                    else f"{char.realm_name} - ({char.region.upper()})"
+                )
                 embed.add_field(
                     name=char.name,
-                    value=f"{char.realm_name} - ({char.region.upper()})",
+                    value=link,
                     inline=False,
                 )
         await ctx.send(embed=embed)

@@ -141,7 +141,7 @@ class CharacterRepository:
     async def get_characters(self, discord_id: int) -> list[CharacterResponse]:
         try:
             query = sa.text("""SELECT
-                c.character_name, r.realm_name,re.region
+                c.character_name, c.url, r.realm_name,re.region
                 FROM characters c JOIN owner_to_character otc on c.id = otc.character_id
                 JOIN owner o on otc.owner_id = o.id
                     and o.discord_id = :discord_id
