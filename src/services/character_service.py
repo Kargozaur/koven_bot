@@ -15,10 +15,12 @@ class CharacterService:
     @transactional
     async def create_character(
         self, discord_id: int, character_dto: CharacterDTO
-    ) -> None:
-        await self.UoW.char_repo.save_character(
+    ) -> None | str:
+        result = await self.UoW.char_repo.save_character(
             discord_id=discord_id, dto=character_dto
         )
+        if result is not None:
+            return result
 
     @read_only
     async def get_characters(self, discord_id: int) -> list[CharacterResponse]:

@@ -22,16 +22,29 @@ class CharacterRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def save_character(self, discord_id: int, dto: CharacterDTO) -> None:
+    async def save_character(self, discord_id: int, dto: CharacterDTO) -> None | str:
         """
-        Saves character information to the database.
+        Saves a character to the database.
 
-        :param discord_id: The Discord ID of the user to save the character for
-        :param dto: The character information to save
+        Parameters
+        ----------
+        discord_id : int
+            The Discord ID of the user associated with the character.
+        dto : CharacterDTO
+            A data transfer object containing the character's information.
 
-        :raises ValueError: If the region is not supported
-        :raises EntityCreationError: If an error occurs while creating an entity
-        :raises Exception: If any other unexpected error occurs
+        Returns
+        -------
+        None | str
+            If successful, returns None. Otherwise, returns a string
+            describing the error.
+
+        Raises
+        ------
+        ValueError
+            If the region is not supported.
+        EntityCreationError
+            If the character or associated realm could not be created.
         """
         try:
             region_map = {"na": 1, "eu": 2, "kr": 3, "tw": 4}
@@ -74,6 +87,8 @@ class CharacterRepository(BaseRepository):
                 )
 
             owner: Owner | None = await super().get_entity(Owner, discord_id=discord_id)
+            if owner and owner.is_deleted:
+                return "Author is deleted"
             if not owner:
                 owner: Owner = await super().create_entity(Owner, discord_id=discord_id)
             character: Character | None = await super().get_entity(
@@ -90,6 +105,13 @@ class CharacterRepository(BaseRepository):
             link: OwnerToCharacter | None = await super().get_entity(
                 OwnerToCharacter, owner_id=owner.id, character_id=character.id
             )
+            if (
+                link
+                and link.is_deleted is True
+                and link.character_id == character.id
+                and link.owner_id == owner.id
+            ):
+                link.is_deleted = False
             if not link:
                 await super().create_entity(
                     OwnerToCharacter, owner_id=owner.id, character_id=character.id
@@ -105,6 +127,20 @@ class CharacterRepository(BaseRepository):
             traceback.print_exc()
 
     async def get_characters(self, discord_id: int) -> Sequence:
+        """
+        Get a list of all characters associated with a given Discord ID.
+
+        Parameters
+        ----------
+        discord_id : int
+            The Discord ID of the user whose characters we want to get.
+
+        Returns
+        -------
+        Sequence
+            A list of tuples, each containing the character name, URL, realm name,
+            and region of the associated characters.
+        """
         try:
             query = sa.text("""SELECT
                 c.character_name, c.url, r.realm_name,re.region
@@ -134,6 +170,23 @@ class CharacterRepository(BaseRepository):
         character_name: str,
         **updated_data: object,
     ) -> bool | None:
+        """
+        Updates a character in the database.
+
+        Parameters
+        ----------
+        character_name : str
+            The name of the character to update.
+        **updated_data : object
+            A dictionary containing the fields of the character to update and their
+            corresponding values.
+
+        Returns
+        -------
+        bool | None
+            True if the character was successfully updated, None if an error
+            occurred.
+        """
         character: Character | None = await super().get_entity(
             Character, character_name=character_name
         )
@@ -149,6 +202,22 @@ class CharacterRepository(BaseRepository):
     async def delete_character(
         self, discord_id: int, character_name: str
     ) -> bool | None | str:
+        """
+        Deletes a character from the database.
+
+        Parameters
+        ----------
+        discord_id : int
+            The Discord ID of the user whose character we want to delete.
+        character_name : str
+            The name of the character to delete.
+
+        Returns
+        -------
+        bool | None | str
+            True if the character was successfully deleted, None if an error occurred,
+            or a string if the author or character was not found.
+        """
         try:
             author: Owner | None = await super().get_entity(
                 Owner, discord_id=discord_id

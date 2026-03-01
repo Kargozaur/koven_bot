@@ -45,12 +45,14 @@ class RioCog(commands.Cog):
                 achievement_points=data["achievement_points"],
             )
 
-            await svc.create_character(ctx.author.id, dto)
-
-            await ctx.send(
-                f":white_check_mark: Added character: {data['name']}.\n"
-                f"Owner: {ctx.author.mention}"
-            )
+            result = await svc.create_character(ctx.author.id, dto)
+            if result is not None:
+                await ctx.send(f"You can't add characters: {result}")
+            else:
+                await ctx.send(
+                    f":white_check_mark: Added character: {data['name']}.\n"
+                    f"Owner: {ctx.author.mention}"
+                )
 
         except Exception as e:
             print(f"Error: {e}")
