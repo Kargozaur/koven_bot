@@ -237,6 +237,16 @@ class CharacterRepository(BaseRepository):
             return "Techical error"
 
     async def get_all_info(self) -> Sequence:
+        """
+        Gets all information about all characters in the database.
+
+        Returns
+        -------
+        Sequence
+            A list of dicts, each containing the character name, realm name, URL,
+            achievement points, updated at timestamp, and region of the associated
+            characters.
+        """
         query = sa.text("""SELECT
         c.character_name, r.realm_name, c.url, c.achievement_points,
         c.updated_at, re.region

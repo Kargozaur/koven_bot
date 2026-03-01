@@ -53,7 +53,9 @@ class CharacterUpdater:
                         ]
                     if not updated_data:
                         return
-                    verified_data = CharacterUpdate(**updated_data)
+                    verified_data = CharacterUpdate(
+                        **updated_data,
+                    )
                     await UoW.char_repo.update_character(
                         character_name=char["character_name"],
                         **verified_data.model_dump(exclude_unset=True),
