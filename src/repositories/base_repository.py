@@ -93,16 +93,19 @@ class BaseRepository:
         if not entity:
             return None
 
-        if entity.is_deleted is None:
+        if not hasattr(entity, "is_deleted"):
+            return None
+
+        if entity.is_deleted is True:
             return True
-        if hasattr(entity, "is_deleted"):
-            try:
-                entity.is_deleted = True
-                await self.session.flush()
-                return True
-            except Exception as exc:
-                # If an error occurs while marking an entity as deleted,
-                # raise an EntityUpdateError
-                raise EntityUpdateError(
-                    f"Failed to mark {model.__name__} as deleted: {exc}"
-                ) from exc
+
+        try:
+            entity.is_deleted = True
+            await self.session.flush()
+            return True
+        except Exception as exc:
+            # If an error occurs while marking an entity as deleted,
+            # raise an EntityUpdateError
+            raise EntityUpdateError(
+                f"Failed to mark {model.__name__} as deleted: {exc}"
+            ) from exc
