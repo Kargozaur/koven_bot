@@ -88,6 +88,7 @@ class RioCog(commands.Cog):
         print("Updating db")
         await updater.update_characters()
         print("updated db")
+        await ctx.send(":white_check_mark: updated db")
 
 
 async def setup(bot: BotContainer) -> None:
