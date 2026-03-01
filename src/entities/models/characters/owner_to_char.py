@@ -3,10 +3,10 @@ from uuid import UUID
 from sqlalchemy import ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import Base
+from . import Base, IsDeletedMixin
 
 
-class OwnerToCharacter(Base):
+class OwnerToCharacter(IsDeletedMixin, Base):
     __tablename__ = "owner_to_character"
 
     owner_id: Mapped[UUID] = mapped_column(

@@ -1,9 +1,15 @@
+from typing import Protocol, runtime_checkable
 from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.exceptions.exceptions import EntityCreationError, EntityUpdateError
+
+
+@runtime_checkable
+class SoftDeletable(Protocol):
+    is_deleted: bool
 
 
 class BaseRepository:
@@ -70,3 +76,33 @@ class BaseRepository:
             raise EntityUpdateError(
                 f"Failed to update {model.__name__}: {exc}"
             ) from exc
+
+    async def delete_entity[ModelT: SoftDeletable](
+        self, model: type[ModelT], **attribures: object
+    ) -> bool | None:
+        """
+        Soft deletes an entity from the database.
+
+        :param model: The type of the entity to delete
+        :param entity_id: The ID of the entity to delete
+        :return: True if the entity was successfully deleted
+        :raises EntityUpdateError: If an error occurs while marking an entity as deleted
+        """
+        entity = await self.get_entity(model, **attribures)
+
+        if not entity:
+            return None
+
+        if entity.is_deleted is None:
+            return True
+        if hasattr(entity, "is_deleted"):
+            try:
+                entity.is_deleted = True
+                await self.session.flush()
+                return True
+            except Exception as exc:
+                # If an error occurs while marking an entity as deleted,
+                # raise an EntityUpdateError
+                raise EntityUpdateError(
+                    f"Failed to mark {model.__name__} as deleted: {exc}"
+                ) from exc

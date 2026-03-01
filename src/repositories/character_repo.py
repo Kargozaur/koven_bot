@@ -97,10 +97,8 @@ class CharacterRepository(BaseRepository):
             print(f"Successfully saved character: {dto.character_name}")
 
         except (ValueError, EntityCreationError) as e:
-            await self.session.rollback()
             print(f"Error: {e}")
         except Exception as e:
-            await self.session.rollback()
             print(f"Unexpected error: {e}")
             import traceback
 
@@ -110,9 +108,12 @@ class CharacterRepository(BaseRepository):
         try:
             query = sa.text("""SELECT
                 c.character_name, c.url, r.realm_name,re.region
-                FROM characters c JOIN owner_to_character otc on c.id = otc.character_id
+                FROM characters c
+                JOIN owner_to_character otc on c.id = otc.character_id
+                    and otc.is_deleted is false
                 JOIN owner o on otc.owner_id = o.id
                     and o.discord_id = :discord_id
+                    and o.is_deleted is false
                 JOIN realm r on c.realm_id = r.id
                 JOIN realms_info ri on r.id = ri.realm_slug_id
                 JOIN region re on ri.realm_region_id = re.id
@@ -144,3 +145,24 @@ class CharacterRepository(BaseRepository):
         if not result:
             return None
         return True
+
+    async def delete_character(
+        self, discord_id: int, character_name: str
+    ) -> bool | None | str:
+        try:
+            author: Owner | None = await super().get_entity(
+                Owner, discord_id=discord_id
+            )
+            if not author or author.is_deleted is True:
+                return "Author not found or deleted"
+            character: Character | None = await super().get_entity(
+                Character, character_name=character_name
+            )
+            if not character:
+                return f"{character_name} not found"
+            return await super().delete_entity(
+                OwnerToCharacter, owner_id=author.id, character_id=character.id
+            )
+        except Exception as exc:
+            print(f"Error: {exc}")
+            return "Techical error"

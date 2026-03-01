@@ -1,11 +1,10 @@
 import asyncio
 
-import discord
 from discord.ext import commands
 
 from src.bot_container import BotContainer
 from src.core.decorators.inject import inject
-from src.entities.schemas.character import CharacterDTO, CharacterResponse
+from src.entities.schemas.character import CharacterDTO
 from src.params.char_params import CharParamns
 from src.services.character_service import CharacterService
 from src.services.rio_service import RaiderIOService
@@ -22,7 +21,7 @@ class RioCog(commands.Cog):
         ctx: commands.Context,
         url: str,
         rio: RaiderIOService = commands.parameter(default=None),
-        repo: CharacterService = commands.parameter(default=None),
+        svc: CharacterService = commands.parameter(default=None),
     ) -> None:
         params: CharParamns | None = await asyncio.to_thread(
             rio._extract_params_from_url, url
@@ -46,7 +45,7 @@ class RioCog(commands.Cog):
                 achievement_points=data["achievement_points"],
             )
 
-            await repo.create_character(ctx.author.id, dto)
+            await svc.create_character(ctx.author.id, dto)
 
             await ctx.send(
                 f":white_check_mark: Added character: {data['name']}.\n"
@@ -58,34 +57,6 @@ class RioCog(commands.Cog):
             import traceback
 
             traceback.print_exc()
-
-    @commands.command(name="get_me")
-    @inject
-    async def build_info(
-        self,
-        ctx: commands.Context,
-        repo: CharacterService = commands.parameter(default=None),
-    ) -> None:
-        characters: list[CharacterResponse] = await repo.get_characters(ctx.author.id)
-        embed = discord.Embed(
-            title=f"Characters of {ctx.author.name}", color=discord.Color.blue()
-        )
-        if not characters:
-            embed.description = "You have no characters"
-        else:
-            for char in characters:
-                link: str = (
-                    f"[Profile]({char.url}) - {char.realm_name} - "
-                    f"({char.region.upper()})"
-                    if char.url
-                    else f"{char.realm_name} - ({char.region.upper()})"
-                )
-                embed.add_field(
-                    name=char.name,
-                    value=link,
-                    inline=False,
-                )
-        await ctx.send(embed=embed)
 
 
 async def setup(bot: BotContainer) -> None:

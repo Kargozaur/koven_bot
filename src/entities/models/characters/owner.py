@@ -1,10 +1,10 @@
 from sqlalchemy import BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import Base, UUIDIdMixin
+from . import Base, IsDeletedMixin, UUIDIdMixin
 
 
-class Owner(UUIDIdMixin, Base):
+class Owner(UUIDIdMixin, IsDeletedMixin, Base):
     __tablename__ = "owner"
 
     discord_id: Mapped[int] = mapped_column(BigInteger, index=True)

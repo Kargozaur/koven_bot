@@ -22,9 +22,7 @@ class CharacterService:
 
     @read_only
     async def get_characters(self, discord_id: int) -> list[CharacterResponse]:
-        print("fetching result")
         result = await self.UoW.char_repo.get_characters(discord_id=discord_id)
-        print(result, type(result))
         return [
             CharacterResponse.model_validate(row) for row in result if row is not None
         ]
@@ -35,5 +33,14 @@ class CharacterService:
     ) -> bool | None:
         result: bool | None = await self.UoW.char_repo.update_character(
             character_name=character_name, **data.model_dump(exclude_unset=True)
+        )
+        return result
+
+    @transactional
+    async def delete_character(
+        self, discord_id: int, character_name: str
+    ) -> bool | None | str:
+        result: bool | None | str = await self.UoW.char_repo.delete_character(
+            discord_id=discord_id, character_name=character_name
         )
         return result
