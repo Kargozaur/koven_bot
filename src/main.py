@@ -11,6 +11,7 @@ from src.di_providers.repo_provider import RepositoryProvider
 from src.di_providers.service_provider import ServiceProvider
 from src.di_providers.settings_provider import SettingsProvider
 from src.di_providers.uow_provider import UOWProvider
+from src.di_providers.update_provider import UpdateProvider
 
 
 async def main() -> None:
@@ -21,6 +22,7 @@ async def main() -> None:
         RepositoryProvider(),
         UOWProvider(),
         ServiceProvider(),
+        UpdateProvider(),
     )
     settings: Settings = await container.get(Settings)
 

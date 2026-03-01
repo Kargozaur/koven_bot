@@ -235,3 +235,16 @@ class CharacterRepository(BaseRepository):
         except Exception as exc:
             print(f"Error: {exc}")
             return "Techical error"
+
+    async def get_all_info(self) -> Sequence:
+        query = sa.text("""SELECT
+        c.character_name, r.realm_name, c.url, c.achievement_points,
+        c.updated_at, re.region
+        FROM characters c
+        JOIN realm r on c.realm_id = r.id
+        JOIN realms_info ri on r.id = ri.realm_slug_id
+        JOIN region re on ri.realm_region_id = re.id
+        """)
+        result = await self.session.execute(query)
+        rows = result.mappings().all()
+        return rows

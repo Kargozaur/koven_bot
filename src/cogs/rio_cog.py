@@ -1,11 +1,12 @@
 import asyncio
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from src.bot_container import BotContainer
 from src.core.decorators.inject import inject
 from src.entities.schemas.character import CharacterDTO
 from src.params.char_params import CharParamns
+from src.polling.character_updater import CharacterUpdater
 from src.services.character_service import CharacterService
 from src.services.rio_service import RaiderIOService
 
@@ -13,6 +14,23 @@ from src.services.rio_service import RaiderIOService
 class RioCog(commands.Cog):
     def __init__(self, bot: BotContainer) -> None:
         self.bot = bot
+        self.polling_task.start()
+
+    def cog_unload(self):  # noqa: ANN201
+        self.polling_task.cancel()
+
+    @tasks.loop(minutes=30)
+    async def polling_task(self) -> None:
+        print("updating db")
+        container = self.bot.container
+        async with container() as request_container:
+            updater: CharacterUpdater = await request_container.get(CharacterUpdater)
+            await updater.update_characters()
+        print("updated db")
+
+    @polling_task.before_loop
+    async def before_polling(self) -> None:
+        await self.bot.wait_until_ready()
 
     @commands.command(name="add")
     @inject
@@ -59,6 +77,17 @@ class RioCog(commands.Cog):
             import traceback
 
             traceback.print_exc()
+
+    @commands.command(name="force_update")
+    @inject
+    async def force_update(
+        self,
+        ctx: commands.Context,
+        updater: CharacterUpdater = commands.parameter(default=None),
+    ) -> None:
+        print("Updating db")
+        await updater.update_characters()
+        print("updated db")
 
 
 async def setup(bot: BotContainer) -> None:
