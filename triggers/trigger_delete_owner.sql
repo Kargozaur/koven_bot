@@ -1,16 +1,16 @@
 create or replace function delete_owner_relations() 
 returns trigger as $$ 
 begin
-    if NEW.is_deleted = TRUE
+    if new.is_deleted = TRUE
     and (
-        OLD.is_deleted = FALSE
-        or OLD.is_deleted is null
+        old.is_deleted = FALSE
+        or old.is_deleted is null
     ) then
         update owner_to_character
         set is_deleted = TRUE
-        where owner_id = NEW.id;
+        where owner_id = new.id;
     end if;
-return NEW;
+return new;
 end;
 $$ LANGUAGE plpgsql;
 create trigger trigger_delete_user
