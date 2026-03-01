@@ -22,8 +22,6 @@ class UnitOfWork(IUnitOfWork):
     ) -> None:
         if exc_val:
             await self.rollback()
-        else:
-            await self.commit()
         await self.close()
 
     async def commit(self) -> None:
