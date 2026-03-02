@@ -82,42 +82,22 @@ factory16: "🏭 AsyncSession"{
     async_sessionmaker_AsyncSession_
 }
 
-factory17: "🏭 CharacterRepository"{
-    shape: class
-    "RepositoryProvider.character_repo()": ""
-    AsyncSession
-}
-
-factory18: "📥 Context"{
-    shape: class
-}
-
-factory19: "📥 None"{
-    shape: class
-}
-
-factory20: "🏭 UnitOfWork"{
+factory17: "🏭 UnitOfWork"{
     shape: class
     "UOWProvider.get_uow()": ""
     AsyncSession
 }
 
-factory21: "🏭 CharacterService"{
+factory18: "🏭 CharacterService"{
     shape: class
     "ServiceProvider.get_character_service()": ""
     UnitOfWork
 }
 
-factory22: "🏭 OwnerService"{
+factory19: "🏭 OwnerService"{
     shape: class
     "ServiceProvider.get_owner_service()": ""
     UnitOfWork
-}
-
-factory23: "🏭 HasContext_Context_"{
-    shape: class
-    "HasProvider.has_context()": ""
-    AsyncContainer
 }
 
 }
@@ -125,7 +105,5 @@ factory23: "🏭 HasContext_Context_"{
 }
 scope1.component2.factory9 --> scope13.component14.factory16
 scope13.component14.factory16 --> scope13.component14.factory17
-scope13.component14.factory16 --> scope13.component14.factory20
-scope13.component14.factory20 --> scope13.component14.factory21
-scope13.component14.factory20 --> scope13.component14.factory22
-scope13.component14.factory15 --> scope13.component14.factory23
+scope13.component14.factory17 --> scope13.component14.factory18
+scope13.component14.factory17 --> scope13.component14.factory19
