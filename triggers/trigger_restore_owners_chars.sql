@@ -1,8 +1,8 @@
 create or replace function restore_owner_relations() 
 returns trigger as $$ 
 begin 
-    if old.is_deleted = TRUE
-    and new.is_deleted = FALSE 
+    if old.is_deleted is true
+    and new.is_deleted is false 
     then
         update owner_to_character
         set is_deleted = FALSE

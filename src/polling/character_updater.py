@@ -44,7 +44,7 @@ class CharacterUpdater:
                         return
                     updated_data: dict = {}
                     if not char["url"] and fresh_data.get("profile_url"):
-                        updated_data["url"] = str(fresh_data["profile_url"])
+                        updated_data["url"] = fresh_data["profile_url"]
                     if char["achievement_points"] != fresh_data.get(
                         "achievement_points"
                     ):

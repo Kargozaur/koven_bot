@@ -1,9 +1,9 @@
 create or replace function delete_owner_relations() 
 returns trigger as $$ 
 begin
-    if new.is_deleted = TRUE
+    if new.is_deleted is
     and (
-        old.is_deleted = FALSE
+        old.is_deleted is false
         or old.is_deleted is null
     ) then
         update owner_to_character

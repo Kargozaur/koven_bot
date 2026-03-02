@@ -1,6 +1,6 @@
 import asyncio
 
-from dishka import make_async_container
+from dishka import make_async_container  # , plotter
 from dishka.async_container import AsyncContainer
 
 from src.bot_container import BotContainer
@@ -31,6 +31,7 @@ async def main() -> None:
 
     bot = BotContainer(command_prefix="!", intents=intents)
     bot.container: AsyncContainer = container
+    # print(plotter.render_d2(container))  # build a dependency graph
     try:
         await bot.start(settings.discord.token.get_secret_value())
     finally:
