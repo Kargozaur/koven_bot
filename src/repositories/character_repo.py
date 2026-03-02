@@ -153,6 +153,7 @@ class CharacterRepository(BaseRepository):
                 JOIN realm r on c.realm_id = r.id
                 JOIN realms_info ri on r.id = ri.realm_slug_id
                 JOIN region re on ri.realm_region_id = re.id
+                WHERE c.is_deleted is false
                 """)
             result = await self.session.execute(
                 query.bindparams(
@@ -254,6 +255,7 @@ class CharacterRepository(BaseRepository):
         JOIN realm r on c.realm_id = r.id
         JOIN realms_info ri on r.id = ri.realm_slug_id
         JOIN region re on ri.realm_region_id = re.id
+        where c.is_deleted is false
         """)
         result = await self.session.execute(query)
         rows = result.mappings().all()

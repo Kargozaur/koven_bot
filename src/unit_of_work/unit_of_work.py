@@ -3,6 +3,7 @@ from typing import Self
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.character_repo import CharacterRepository
+from src.repositories.owner_repo import OwnerRepository
 from src.unit_of_work.iuow import IUnitOfWork
 
 
@@ -10,6 +11,7 @@ class UnitOfWork(IUnitOfWork):
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
         self.char_repo: CharacterRepository = CharacterRepository(session)
+        self.owner_repo: OwnerRepository = OwnerRepository(session)
 
     async def __aenter__(self) -> Self:
         return self

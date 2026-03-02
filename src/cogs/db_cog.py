@@ -6,6 +6,7 @@ from src.core.decorators.inject import inject
 from src.core.settings.db_settings import AbstractDBConfig
 from src.entities.schemas.character import CharacterResponse
 from src.services.character_service import CharacterService
+from src.services.owner_service import OwnerService
 
 
 class DBCog(commands.Cog):
@@ -60,6 +61,21 @@ class DBCog(commands.Cog):
             await ctx.send("Character deleted")
         else:
             await ctx.send(f"Character not found: {result}")
+
+    @commands.command(name="delete_owner")
+    @inject
+    async def delete_owner(
+        self,
+        ctx: commands.Context,
+        *,
+        owner_id: int,
+        svc: OwnerService = commands.parameter(default=None),
+    ) -> None:
+        result: bool | None = await svc.deactivate_owner(owner_id)
+        if result is True:
+            await ctx.send("Owner deleted")
+        else:
+            await ctx.send("Owner not found")
 
 
 async def setup(bot: BotContainer) -> None:

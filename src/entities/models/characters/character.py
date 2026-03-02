@@ -2,10 +2,10 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import String
 
-from . import Base, CreatedAtMixin, UpdatedAtMixin, UUIDIdMixin
+from . import Base, CreatedAtMixin, IsDeletedMixin, UpdatedAtMixin, UUIDIdMixin
 
 
-class Character(UUIDIdMixin, CreatedAtMixin, UpdatedAtMixin, Base):
+class Character(UUIDIdMixin, CreatedAtMixin, UpdatedAtMixin, IsDeletedMixin, Base):
     __tablename__ = "characters"
 
     character_name: Mapped[str] = mapped_column(String(20))

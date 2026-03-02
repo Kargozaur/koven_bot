@@ -3,6 +3,7 @@ from httpx import AsyncClient
 
 from src.core.settings.rio_settings import RioSettings
 from src.services.character_service import CharacterService
+from src.services.owner_service import OwnerService
 from src.services.rio_service import RaiderIOService
 from src.unit_of_work.unit_of_work import UnitOfWork
 
@@ -19,4 +20,11 @@ class ServiceProvider(Provider):
         print("injecting character service")
         svc = CharacterService(uow)
         print("injected character service")
+        return svc
+
+    @provide(scope=Scope.REQUEST)
+    def get_owner_service(self, uow: UnitOfWork) -> OwnerService:
+        print("injecting owner service")
+        svc = OwnerService(uow)
+        print("injected owner service")
         return svc
