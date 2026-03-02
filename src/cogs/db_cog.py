@@ -71,6 +71,9 @@ class DBCog(commands.Cog):
         owner_id: int,
         svc: OwnerService = commands.parameter(default=None),
     ) -> None:
+        if ctx.author.id == owner_id:
+            await ctx.send("You cannot delete yourself")
+            return
         result: bool | None = await svc.deactivate_owner(owner_id)
         if result is True:
             await ctx.send("Owner deleted")
