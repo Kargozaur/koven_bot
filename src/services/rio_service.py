@@ -37,7 +37,9 @@ class RaiderIOService:
             return None
 
     async def fetch_character(self, params: CharParamns) -> dict | None:
-
+        """Fetches character from a RIO api.
+        Returns dict with data if successful, None otherwise.
+        """
         query_params = {
             "region": params.region,
             "realm": params.realm,
