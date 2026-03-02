@@ -11,7 +11,7 @@ Koven bot is a discord bot for the Koven guild in WoW. Currently supports only R
 - [x] Character Management
   - [x] Create a character
   - [x] Set character inactive
-  - [x] Automatic [polling](src.cogs.rio_cog.py) on startup and once every 30 minutes
+  - [x] Automatic [polling](src/cogs/rio_cog.py) on startup and once every 30 minutes
 
 ## Installation
 
