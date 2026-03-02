@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import Sequence
+from uuid import UUID
 
 import sqlalchemy as sa
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -21,6 +22,105 @@ from src.repositories.base_repository import BaseRepository
 class CharacterRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
+
+    async def _get_or_validate_region(self, region_name: str) -> Region:
+        region_map = {"na": 1, "eu": 2, "kr": 3, "tw": 4}
+        target_id = region_map.get(region_name.lower())
+
+        if not target_id:
+            raise ValueError(f"Region is not supported: {region_name}")
+
+        region = await super().get_entity(Region, id=target_id)
+        if not region:
+            raise ValueError("Region not found in DB")
+        return region
+
+    async def _get_or_create_realm(self, realm_raw_name: str) -> Realm:
+        search_name = realm_raw_name.replace("-", " ").title()
+        realm = await super().get_entity(Realm, realm_name=search_name)
+
+        if not realm:
+            short_name = await asyncio.to_thread(Realm._generate_candidate, search_name)
+            realm = await super().create_entity(
+                Realm,
+                realm_name=search_name,
+                realm_short_name=short_name,
+            )
+            print(f"Created realm: {realm.realm_name}")
+        return realm
+
+    async def _ensure_realm_info(self, realm_id: int, region_id: int) -> None:
+        realm_info = await super().get_entity(
+            RealmsInfo, realm_slug_id=realm_id, realm_region_id=region_id
+        )
+        if not realm_info:
+            await super().create_entity(
+                RealmsInfo,
+                realm_slug_id=realm_id,
+                realm_region_id=region_id,
+                locale_id=2,  # placeholder
+            )
+
+    async def _ensure_realm_info(self, realm_id: int, region_id: int) -> None:
+        realm_info = await super().get_entity(
+            RealmsInfo, realm_slug_id=realm_id, realm_region_id=region_id
+        )
+        if not realm_info:
+            await super().create_entity(
+                RealmsInfo,
+                realm_slug_id=realm_id,
+                realm_region_id=region_id,
+                locale_id=2,  # placeholder
+            )
+
+    async def _get_or_create_character(
+        self, dto: CharacterDTO, realm_id: int
+    ) -> Character:
+        character = await super().get_entity(
+            Character, character_name=dto.character_name, realm_id=realm_id
+        )
+        if not character:
+            character_data = CharacterInfo(**dto.model_dump())
+            character = await super().create_entity(
+                Character,
+                **character_data.model_dump(exclude_unset=True),
+                realm_id=realm_id,
+            )
+        return character
+
+    async def _link_owner_to_character(
+        self, owner_id: UUID, character_id: UUID
+    ) -> None:
+        link = await super().get_entity(
+            OwnerToCharacter, owner_id=owner_id, character_id=character_id
+        )
+
+        if link:
+            if link.is_deleted:
+                link.is_deleted = False
+            return
+
+        await super().create_entity(
+            OwnerToCharacter, owner_id=owner_id, character_id=character_id
+        )
+
+    async def _get_or_create_owner(self, discord_id: int) -> Owner | str:
+        owner = await super().get_entity(Owner, discord_id=discord_id)
+        if owner:
+            if owner.is_deleted:
+                return "Author is deleted"
+            return owner
+
+        return await super().create_entity(Owner, discord_id=discord_id)
+
+    async def _get_or_create_owner(self, discord_id: int) -> Owner | str:
+        owner = await super().get_entity(Owner, discord_id=discord_id)
+        if owner:
+            if owner.is_deleted:
+                return "Author is deleted"
+            return owner
+
+        return await super().create_entity(Owner, discord_id=discord_id)
 
     async def save_character(self, discord_id: int, dto: CharacterDTO) -> None | str:
         """
@@ -47,77 +147,30 @@ class CharacterRepository(BaseRepository):
             If the character or associated realm could not be created.
         """
         try:
-            region_map = {"na": 1, "eu": 2, "kr": 3, "tw": 4}
-            target_region_id = region_map.get(dto.region.lower())
+            region = await self._get_or_validate_region(dto.region)
+            realm = await self._get_or_create_realm(dto.realm)
 
-            if not target_region_id:
-                raise ValueError(f"Region is not supported: {dto.region}")
+            await self._ensure_realm_info(realm.id, region.id)
 
-            region: Region | None = await super().get_entity(
-                Region, id=target_region_id
-            )
-            if not region:
-                raise ValueError("Region not found in DB")
+            owner = await self._get_or_create_owner(discord_id)
+            if isinstance(owner, str):
+                return owner
 
-            search_name: str = dto.realm.replace("-", " ").title()
-            realm: Realm | None = await super().get_entity(
-                Realm, realm_name=search_name
-            )
+            character: Character = await self._get_or_create_character(dto, realm.id)
+            await self._link_owner_to_character(owner.id, character.id)
 
-            if not realm:
-                short_name: str = await asyncio.to_thread(
-                    Realm._generate_candidate, search_name
-                )
-                realm: Realm = await super().create_entity(
-                    Realm,
-                    realm_name=search_name,
-                    realm_short_name=short_name,
-                )
-                print(f"Created realm: {realm.realm_name}")
-
-            realm_info: RealmsInfo | None = await super().get_entity(
-                RealmsInfo, realm_slug_id=realm.id, realm_region_id=region.id
-            )
-            if not realm_info:
-                realm_info: RealmsInfo = await super().create_entity(
-                    RealmsInfo,
-                    realm_slug_id=realm.id,
-                    realm_region_id=region.id,
-                    locale_id=2,  # placeholder
-                )
-
-            owner: Owner | None = await super().get_entity(Owner, discord_id=discord_id)
-            if owner and owner.is_deleted:
-                return "Author is deleted"
-            if not owner:
-                owner: Owner = await super().create_entity(Owner, discord_id=discord_id)
-            character: Character | None = await super().get_entity(
-                Character, character_name=dto.character_name, realm_id=realm.id
-            )
-            if not character:
-                character_data: CharacterInfo = CharacterInfo(**dto.model_dump())
-                character: Character = await super().create_entity(
-                    Character,
-                    **character_data.model_dump(exclude_unset=True),
-                    realm_id=realm.id,
-                )
-
-            link: OwnerToCharacter | None = await super().get_entity(
-                OwnerToCharacter, owner_id=owner.id, character_id=character.id
-            )
-            if (
-                link
-                and link.is_deleted is True
-                and link.character_id == character.id
-                and link.owner_id == owner.id
-            ):
-                link.is_deleted = False
-            if not link:
-                await super().create_entity(
-                    OwnerToCharacter, owner_id=owner.id, character_id=character.id
-                )
             print(f"Successfully saved character: {dto.character_name}")
+            return None
 
+        except (ValueError, EntityCreationError) as e:
+            print(f"Error: {e}")
+            return str(e)
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            import traceback
+
+            traceback.print_exc()
+            return "Internal error"
         except (ValueError, EntityCreationError) as e:
             print(f"Error: {e}")
         except Exception as e:
